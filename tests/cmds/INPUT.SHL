@@ -1,0 +1,2 @@
+VAR name %@INPUT:0;What_Is_Your_Name%
+PRINT Your_name_is_%name%
