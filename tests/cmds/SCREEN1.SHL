@@ -1,0 +1,11 @@
+Test for curses
+
+SCREEN 1000
+
+PUTLINE 1 1 Test line
+
+PAUSE
+
+SCREEN 0
+
+PRINT Returned_To_Normal!
