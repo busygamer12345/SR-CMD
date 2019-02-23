@@ -389,7 +389,7 @@ def prep(cmd):
 		PREPROCESSER(the_cmd,the_args)
 		return main_parse(the_cmd,parsed_args)
 	except Exception as e:
-		prep("PANIC "+(str(e)).replace(" ","_")+" "+ cmd.replace(" ","_"))
+		cmd_panic([str(e),cmd])
 
 
 
@@ -926,7 +926,7 @@ def repl():
 			if ERROR_PROTECTION:
 				if (len(str(e)) > 150):
 					e = "<Too long to display>"
-				prep("PANIC "+(str(e)).replace(" ","_")+" "+PPP.replace(" ","_"))
+				cmd_panic([str(e),PPP])
 				prep("SCREEN 0")
 				deb(str(e))
 				pass
