@@ -1,0 +1,73 @@
+Another test for screen modes
+
+SCREEN 1001
+
+PUTLINE 1 1 When_The_Below_Counter_Reaches_Zero,_This_Screen_Will_Dissapeaar!
+
+VAR count 15
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+PUTLINE 10 10 $%count%_
+DEC count
+DELAY 1
+
+SCREEN 0
