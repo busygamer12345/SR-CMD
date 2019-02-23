@@ -1,4 +1,0 @@
-VAR fname %@INPUT:00;Enter_File_Name%
-VAR content %INPUT:01;Enter_Content%
-
-WRITE %fname% %content%
