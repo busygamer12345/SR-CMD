@@ -1,0 +1,30 @@
+Errorous code to test error handling
+
+::: Variable not in store (Fixed) :::
+
+PRINT %nonexistantvar%
+
+::: Curses out of bounds :::
+
+SCREEN 1
+PUTLINE 100000 100000 Error!
+
+::: Curses string for char :::
+
+SCREEN 1
+PUTCHAR 0 0 not_a_char
+
+::: Integer convertion errors :::
+
+VAR undef 0
+INC undef notintegr
+DEC undef notintegr
+VAR imp -123
+INC undef %imp%
+VAR nint not
+INC nint
+
+::: Percent out of bounds :::
+
+VCMD %@INPUT%
+
