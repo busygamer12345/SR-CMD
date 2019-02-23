@@ -129,15 +129,44 @@ MODULES = []
 DEBUG_TAG = "DEBUG: "
 ECHO_TAG = ""
 DEBUG_LOGS = []
+COMMAND_LOGS = []
+OUTPUT_LOGS = []
 
 def pie(ar):
 	if ECHO:
 		print(ECHO_TAG+ar)
+		
+	OUTPUT_LOGS.append(ar)
 
 def deb(ar):
 	if DEBUG:
 		print(DEBUG_TAG + ar)
-	DEBUG_LOGS.append(ar)
+		DEBUG_LOGS.append(ar)
+	
+def PREPROCESSER(cmd,args):
+	...
+
+def DANGEROUS_PATH_HANDLER(dpath,cmd):
+	...
+
+def EXECPTION_HANDLER(e,last_cmd,last_args):
+	...
+
+def SCAN_HANDLER(filname,content):
+	...
+
+
+# Parser funcs
+
+def parser_input(arg):
+	return input(str(arg))
+
+
+# Parser for parsing some % funcs
+
+PARSERS = {
+	"INPUT" : {"args":["str"],"exec":parser_input}
+}
 
 
 
@@ -145,9 +174,7 @@ def deb(ar):
 
 def cmd_chatbot():
 	raise NotImplementedError
-
-
-
+	
 ####### ASYNC FUNCTION ######
 
 async def async_alert():
@@ -207,23 +234,24 @@ def extract_varstr(st):
 			buff = buff + sts[i]
 	
 	for i in varreplace:
-		if ("@INPUT:" in i):
-			deb("Prompt line found in string with id of " + (i.split(":")[1]).split(";")[0] + " and the prompt of " + i.split(":")[1].split(";")[1])
-			st = st.replace("%"+i+"%",input(i.split(";")[1]))
-			continue
-		elif ("@READ:" in i):
-			deb("Read line found in string with id of " + (i.split(":")[1]).split(";")[0] + " and the file of " + i.split(":")[1].split(";")[1])
-			file = i.split(";")[1]
-			try:
-				a = open(file,"r")
-				b = a.read()
-				a.close()
-			except Exception as e:
-				deb("SILENT ERROR: IOExecption in reading " + file + " Error: " + str(e))
-				b = "NULL"
+		if "@" in i:
+			the_pcmds = i.split("@")[1]
+			the_cmd = the_pcmds.split(":")[0]
+			the_arg = (the_pcmds.split(":")[1]).split(";")[1]
+			deb("Found parser @"+the_cmd+" with argument "+the_arg)
 
-			st = st.replace("%"+i+"%",b)
-			
+			for key in PARSERS:
+				if key == the_cmd:
+					val = PARSERS[key]["exec"](the_arg)
+					st = st.replace("%"+i+"%",val)
+					continue
+
+			deb("Parser for "+the_cmd+" not found")
+			continue
+
+		if(not i in VARS):
+			deb("The variable "+i+" is not found in the global variable store")
+			st = st.replace("%"+i+"%","NULL")
 			continue
 		st = st.replace("%"+i+"%",str(VARS[i]))
 		
@@ -356,6 +384,8 @@ def prep(cmd):
 	the_cmd = cmd_chain["command"]
 	the_args = cmd_chain["args"]
 	parsed_args = parse_args(the_args)
+	COMMAND_LOGS.append({"command":the_cmd,"args":the_args})
+	PREPROCESSER(the_cmd,the_args)
 	return main_parse(the_cmd,parsed_args)
 
 
@@ -465,6 +495,7 @@ def cmd_write(args):
 	if REAL_TIME_PREVENTION:
 		for i in DANGEROUS_PATHS:
 			if file == i:
+				DANGEROUS_PATH_HANDLER(file,"WRITE")
 				deb("UAC Prevented access of this path: " + i)
 				return
 	try:
@@ -520,6 +551,7 @@ def cmd_delete(args):
 	if REAL_TIME_PREVENTION:
 		for i in DANGEROUS_PATHS:
 			if file == i:
+				DANGEROUS_PATH_HANDLER(file,"DELETE")
 				deb("UAC Prevented access of this path: " + i)
 				return
 
@@ -715,21 +747,16 @@ def cmd_panic(args):
 	SCROBJ.addstr(5,59,"Fatal error in program",COLOR_RED)
 	SCROBJ.addstr(15,5,"Error: "+str(args[0]),A_BLINK)
 	SCROBJ.refresh()
-	a = asyncio.ensure_future(async_alert)
+
 
 	def tempfs():
-
-		ans = SCROBJ.getkey()
-
 		if ans == "C":
 			return
-			a.cancel()
+
 		elif ans == "H":
-			a.cancel()
 			prep("SCREEN 0")
 			exit()
 		elif ans == "D":
-			a.cancel()
 			print(DEBUG_LOGS)
 			prep("SCREEN 0")
 			exit()
@@ -798,6 +825,7 @@ def avirus_scan(args):
 				b = a.read()
 				a.close()
 				deb("Content of " + i + " is : \"" + b + "\"")
+				SCAN_HANDLER(i,b)
 				for q in DANGEROUS_SNIPPETS:
 					if q in b:
 						if not i in MAL_FILES: 
@@ -852,6 +880,9 @@ COMMANDS = {
 
 
 
+
+
+
 def main_parse(cmd,args):
 	global SHELL
 	deb("The command is " + str(cmd))
@@ -876,9 +907,11 @@ def repl():
 	SCROBJ = initscr()
 	endwin()
 	while True:
+		PPP = input(parse_prompt(PROMPT))
 		try:
-			prep(input(parse_prompt(PROMPT)))
+			prep(PPP)
 		except Exception as e:
+			EXECPTION_HANDLER(e,PPP,[])
 			deb("Fatal error in program")
 			if ERROR_PROTECTION:
 				if (len(str(e)) > 150):
