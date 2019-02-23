@@ -380,13 +380,16 @@ def change_prompt(new):
 
 
 def prep(cmd):
-	cmd_chain = extract_args(cmd)
-	the_cmd = cmd_chain["command"]
-	the_args = cmd_chain["args"]
-	parsed_args = parse_args(the_args)
-	COMMAND_LOGS.append({"command":the_cmd,"args":the_args})
-	PREPROCESSER(the_cmd,the_args)
-	return main_parse(the_cmd,parsed_args)
+	try:
+		cmd_chain = extract_args(cmd)
+		the_cmd = cmd_chain["command"]
+		the_args = cmd_chain["args"]
+		parsed_args = parse_args(the_args)
+		COMMAND_LOGS.append({"command":the_cmd,"args":the_args})
+		PREPROCESSER(the_cmd,the_args)
+		return main_parse(the_cmd,parsed_args)
+	except Exception as e:
+		prep("PANIC "+(str(e)).replace(" ","_")+" "+ cmd.replace(" ","_"))
 
 
 
@@ -722,14 +725,16 @@ def cmd_pause(args):
 def cmd_panic(args):
 	deb("Command refrenced a PANIC statment")
 	deb("There are total of " + str(len(args)) + " passed to this statement" )
-	if not len(args) == 1:
-		pie("ERROR: Statement expected one and only one argument passed to it. PANIC [error]. The arguments are not optional")
+	if not len(args) == 2:
+		pie("ERROR: Statement expected two and only two arguments passed to it. PANIC [error] [command]. The arguments are not optional")
 		return
 		
 	if len(args[0]) > 150:
-		args[0] = "<Unknown>"
+		args[0] = "<..too large to show>"
+
+	if len(args[1]) > 100:
+		args[1] = "<Cannot retrive>"
 	global SCROBJ,SCREEN,DEBUG,ECHO,PROMPT
-	deb("If you are seeing this, it is not working!")
 	SCROBJ = initscr()
 	noecho()
 	cbreak()
@@ -744,13 +749,16 @@ def cmd_panic(args):
 	SCROBJ.addstr(0,65,"PANIC MODE",A_BOLD)
 	SCR_Y = SCROBJ.getmaxyx()[0]
 	SCROBJ.addstr(SCR_Y-1,13,"C:Continue,H:Halt,D:Halt+Dump",A_BOLD)
-	SCROBJ.addstr(5,59,"Fatal error in program",COLOR_RED)
+	SCROBJ.addstr(3,59,"Fatal error in program",COLOR_RED)
+	SCROBJ.addstr(5,30,"Command:"+args[1])
 	SCROBJ.addstr(15,5,"Error: "+str(args[0]),A_BLINK)
 	SCROBJ.refresh()
 
 
 	def tempfs():
+		ans = SCROBJ.getkey()
 		if ans == "C":
+			prep("SCREEN 0")
 			return
 
 		elif ans == "H":
@@ -854,6 +862,7 @@ COMMANDS = {
 	"WRITE" : {"args":["str","str"],"shell":"MAIN","screen":-1,"exec":cmd_write},
 	"INC" : {"args":["var","*int"],"shell":"MAIN","screen":-1,"exec":cmd_inc},
 	"DELETE" : {"args":["str"],"shell":"MAIN","screen":-1,"exec":cmd_delete},
+	"DELAY" : {"args":["int"],"shell":"MAIN","screen":-1,"exec":cmd_delay},
 	"AVIRUS" : {"args":[],"shell":"MAIN","screen":-1,"exec":cmd_avirus},
 	"EXIT" : {"args":["str","str"],"shell":"MAIN","screen":-1,"exec":exit},
 	"USE" : {"args":["str"],"shell":"MAIN","screen":-1,"exec":cmd_use},
@@ -913,10 +922,11 @@ def repl():
 		except Exception as e:
 			EXECPTION_HANDLER(e,PPP,[])
 			deb("Fatal error in program")
+			prep("SCREEN 0")
 			if ERROR_PROTECTION:
 				if (len(str(e)) > 150):
 					e = "<Too long to display>"
-				prep("PANIC "+(str(e)).replace(" ","_"))
+				prep("PANIC "+(str(e)).replace(" ","_")+" "+PPP.replace(" ","_"))
 				prep("SCREEN 0")
 				deb(str(e))
 				pass
