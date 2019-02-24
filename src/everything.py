@@ -191,6 +191,8 @@ async def async_alert():
 
 
 def extract_varstr(st):
+	if st == None:
+		return ""
 	global PARSE_INBLOCK,PARSE_BLOCKLVL
 	st = st.replace("_"," ")
 	st = st.replace("__","_")
@@ -271,18 +273,16 @@ def extract_args(this_thing):
 	return {"command":this_command,"arg_count":arg_count,"args":args_of_thing}
 
 def resolve_type(tstr):
-	strl = list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$?<>!@#$%^&()[]{}`~.':;|,\\=\"\n\a\t")
 	ot = tstr
 	tlist = list(tstr)
-	if ot == "" or ot == "\t":
-		deb(ot + " is nothing. Skipping now")
+	if ot == "" or ot == "\t" or ot == None:
 		return "<<<SKIP>>>"
 	if(tlist[0] == "$"):
 		tlist.pop(0)
 		tlist = "".join(tlist)
 		deb(ot + " is a integer->string")
 		return tlist
-	deb("String char set: " + "".join(strl))
+	strl = list("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_$?<>!@#$%^&()[]{}`~.':;|,\\=\"\n\a\t")
 	for i in range(len(strl)):
 		if(strl[i] in ot):
 			deb(ot + " is a string")
@@ -302,6 +302,9 @@ def ck_type(arr_of_vals,arr_of_types):
 
 
 def parse_args(args):
+	if not type(args) == type([]):
+		deb("Invalid arg container. Returning empty array")
+		return [] 
 	arg = []
 	for i in range(len(args)):
 		
@@ -309,10 +312,10 @@ def parse_args(args):
 		args[i] = extract_varstr(args[i])
 		deb(str(args[i]) + "is the value of the parsed argument....")
 		a = resolve_type(args[i])
-		arg.append(a)
 		a = resolve_type(args[i])
 		if a == "<<<SKIP>>>":
 			continue
+		arg.append(a)
 	return arg
 
 
@@ -765,8 +768,11 @@ def cmd_panic(args):
 			prep("SCREEN 0")
 			exit()
 		elif ans == "D":
-			print(DEBUG_LOGS)
+			debfil = open("tmpfil.dat","w+")
+			debfil.write(str("\n".join(DEBUG_LOGS)))
+			debfil.close()
 			prep("SCREEN 0")
+			system("cat tmpfil.dat | more")
 			exit()
 		else:
 			tempfs()
